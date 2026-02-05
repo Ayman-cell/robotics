@@ -1,0 +1,145 @@
+import cv2 as cv
+import mediapipe as mp
+import tkinter as tk
+from PIL import Image, ImageTk
+import serial
+import time
+
+# Initialisation des solutions Mediapipe
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7)
+
+# Initialisation de la communication série avec Arduino
+try:
+    ser = serial.Serial('COM5', 115200, timeout=1)  # Remplacez 'COM5' par le port série approprié
+    time.sleep(2)  # Temps d'attente pour l'initialisation de la connexion série
+except serial.SerialException as e:
+    print(f"Erreur lors de l'initialisation de la connexion série : {e}")
+    ser = None
+
+gesture = None
+
+ser.write(f"G91;".encode())
+print("Set Relative")
+
+# Fonction de détection des gestes
+def detect_gesture(landmarks):
+    thumb_is_open = landmarks[4].y < landmarks[3].y < landmarks[2].y
+    index_is_open = landmarks[8].y < landmarks[6].y
+    middle_is_open = landmarks[12].y < landmarks[10].y
+    ring_is_open = landmarks[16].y < landmarks[14].y
+    pinky_is_open = landmarks[20].y < landmarks[18].y
+
+    if all([thumb_is_open, index_is_open, middle_is_open, ring_is_open, pinky_is_open]):
+        return "Open"
+    if index_is_open and not any([middle_is_open, ring_is_open, pinky_is_open]):
+        return "Left"
+    if middle_is_open and ring_is_open and pinky_is_open:
+        return "OK"
+    if all([middle_is_open, index_is_open]) and not any([pinky_is_open, ring_is_open]):
+        return "Peace"
+    if thumb_is_open and not any([middle_is_open, index_is_open, ring_is_open]) and pinky_is_open:
+        return "Right"
+    if thumb_is_open and not any([middle_is_open, index_is_open, pinky_is_open, ring_is_open]):
+        return "Closed"
+    if middle_is_open and not any([ring_is_open, pinky_is_open]):
+        return "FUCK"
+
+
+
+# Fonction pour envoyer des données à l'Arduino et attendre l'accusé de réception
+def send_to_arduino(command):
+    if ser:
+        try:
+            print(f"Command sent: {command}")
+            ser.write(f"{command};".encode())  # Envoyer la commande
+
+            timeout = time.time() + 5  # 5 seconds timeout
+
+            # Attendre une réponse
+            while True:
+                response = ser.readline().decode().strip()
+                if response == ">":
+                    print(response)
+                    print("Acknowledgment received.")
+                    ser.flush()
+                    time.sleep(0.5)
+                    break
+                elif time.time() > timeout:
+                    print("Timeout: No acknowledgment received.")
+                    break
+                else:
+                    print("No acknowledgment, resending command...")
+                    time.sleep(0.5)  # Attendre un court instant avant de réessayer
+                    response = ser.readline().decode().strip()
+                    print(response)
+                    ser.flush()
+        except serial.SerialException as e:
+            print(f"Erreur lors de l'envoi des données à l'Arduino : {e}")
+
+# Fonction de mise à jour de l'affichage des gestes
+def update_gesture_label():
+    global frame, root
+
+    ret, frame = cap.read()
+    if not ret:
+        return
+
+    frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+    results = hands.process(frame_rgb)
+
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            landmarks = hand_landmarks.landmark
+            gesture = detect_gesture(landmarks)
+            gesture_label.config(text=f"Geste détecté : {gesture}", bg="white")
+            if gesture == "Left":
+               send_to_arduino("G0 Y-20")
+            elif gesture == "Right": 
+               send_to_arduino("G0 Y20")
+            elif gesture == "Peace":
+               send_to_arduino("G0 X20")
+            elif gesture == "OK":
+               send_to_arduino("G0 X-20")
+            elif gesture == "Closed":
+               send_to_arduino("G10")
+            elif gesture == "Open":
+                send_to_arduino("G0 Z-20")
+            elif gesture == "FUCK":
+                send_to_arduino("G0 Z20")
+
+
+    frame_rgb_resized = cv.resize(frame_rgb, (int(frame_width * 0.5), int(frame_height * 0.5)))
+    frame_pil = Image.fromarray(frame_rgb_resized)
+    frame_tk = ImageTk.PhotoImage(image=frame_pil)
+
+    camera_label.imgtk = frame_tk
+    camera_label.config(image=frame_tk, bg="white")
+
+    root.after(10, update_gesture_label)
+
+# Configuration de l'interface Tkinter
+root = tk.Tk()
+root.title("Contrôle des gestes de la main")
+
+canvas = tk.Canvas(root, width=800, height=600, bg="white")
+canvas.pack(fill="both", expand=True)
+
+gesture_label = tk.Label(canvas, text="Geste détecté : ", font=("Helvetica", 12, "italic"), bg="white")
+gesture_label.pack(pady=20)
+
+camera_label = tk.Label(canvas, bg="white")
+camera_label.pack(padx=10, pady=10)
+
+cap = cv.VideoCapture(0)
+frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+
+root.after(10, update_gesture_label)
+root.mainloop()
+
+cap.release()
+cv.destroyAllWindows()
+
+if ser:
+    ser.close()

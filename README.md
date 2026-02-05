@@ -1,177 +1,104 @@
-# Forum 2028 — Robot Pick & Place (Contrôle 3 axes)
+# 🤖 Portfolio Robotics - Ayman
 
-Projet de **robot Pick & Place** à 3 axes (X, Y, Z) avec contrôle par **G-code**, interface **Processing** et **contrôle par gestes de la main** (Python + MediaPipe). Réalisé dans le cadre du Forum 2028.
+Bienvenue dans mon portfolio de projets techniques en robotique et intelligence artificielle.
 
----
+## 📚 Vue d'ensemble
 
-## 📋 Table des matières
+Ce dépôt contient mes projets techniques pertinents démontrant mes compétences en :
+- 🤖 Robotique et systèmes embarqués
+- 👁️ Vision par ordinateur
+- 🤖 Intelligence artificielle / Machine Learning
+- 💻 Développement Python
+- 🔌 Programmation Arduino
 
-- [Vue d’ensemble](#-vue-densemble)
-- [Structure du projet](#-structure-du-projet)
-- [Matériel et câblage](#-matériel-et-câblage)
-- [Installation et utilisation](#-installation-et-utilisation)
-- [Commandes G-code (firmware Arduino)](#-commandes-g-code-firmware-arduino)
-- [Contrôle par gestes (Python)](#-contrôle-par-gestes-python)
-- [Dépannage](#-dépannage)
-- [Licence et crédits](#-licence-et-crédits)
-
----
-
-## 🎯 Vue d’ensemble
-
-Le système comprend :
-
-1. **Firmware Arduino** (`VortexMover_Silent`) : interprète du G-code, pilotage des moteurs pas-à-pas (X, Y, Z), fin de course, pompe/vanne pour le pick & place.
-2. **Interfaces Processing** :
-   - **Processing_2** : dessin de trajectoires (clic–glisser) puis envoi des points à l’Arduino.
-   - **VotexMover_Processing** : interface complète (joystick 2D, champs X/Y/Z, mode dessin, chargement de fichiers G-code, boutons Pick/Place).
-3. **Script Python** : détection de gestes de la main (MediaPipe + webcam) et envoi de commandes série pour déplacer le robot.
-
-Espace de travail typique : **250 mm (X) × 300 mm (Y) × 100 mm (Z)** (à adapter selon votre machine).
-
----
-
-## 📁 Structure du projet
+## 🗂️ Structure du dépôt
 
 ```
-Codes Forum 2028 (Pick & Place)/
-├── README.md                    # Ce fichier
-├── requirements.txt             # Dépendances Python (contrôle par gestes)
-├── Python Forum 2028.txt        # Script Python — contrôle par gestes (à exécuter avec Python)
-├── Processing_2/                 # Interface Processing — dessin de trajectoires
-│   ├── Processing_2.pde
-│   └── (images optionnelles)
-├── VortexMover_Silent/          # Firmware Arduino — contrôleur 3 axes
-│   └── VortexMover_Silent.ino
-└── VotexMover_Processing/       # Interface Processing — contrôle complet
-    ├── VotexMover_Processing.pde
-    └── 6020105.jpg              # Image de fond (optionnelle)
+robotics/
+│
+├── X-Ibition-2025-Robodog/        # Projet 1 : Robot chien quadrupède
+│   ├── INTERFACE 2025 EAC/        # Code Python
+│   ├── RobotDog/                  # Code Arduino
+│   └── README.md
+│
+├── Forum-2028-Pick-And-Place/     # Projet 2 : Robot Pick & Place 3 axes
+│   ├── Processing_2/               # Interface dessin de trajectoires
+│   ├── VortexMover_Silent/        # Firmware Arduino G-code
+│   ├── VotexMover_Processing/     # Interface complète (joystick, Pick/Place)
+│   ├── Python Forum 2028.txt      # Contrôle par gestes (MediaPipe)
+│   ├── requirements.txt
+│   └── README.md
+│
+├── PROJECTS.md                    # Liste détaillée de tous les projets
+├── README.md                       # Ce fichier
+└── .gitignore
 ```
 
----
+## 🚀 Projets
 
-## 🔌 Matériel et câblage
+### 1. X-Ibition 2025 Robodog 🤖🐕
+**Description** : Robot chien quadrupède avec contrôle multi-modal (manuel, gestes, autonome)
 
-### Côté Arduino (VortexMover_Silent)
+**Technologies** : Python, Arduino, MediaPipe, YOLO v8, CustomTkinter
 
-- **Moteurs** : 3 axes (X, Y, Z) avec pilotes type step/dir.
-- **Broches (à adapter si besoin)** :
-  - **EN+** : 8 (X), 6 (Y), 2 (Z)
-  - **CW+ (Direction)** : 9 (X), 5 (Y), 22 (Z)
-  - **CLK+ (Step)** : 10 (X), 3 (Y), 7 (Z)
-  - **Fin de course** : 21 (X), 20 (Y), 19 (Z)
-  - **Pompe** : 40 — **Soupape** : 12
-- **Communication** : USB série **115200 baud**.
+**Lien** : [Voir le projet](./X-Ibition-2025-Robodog/README.md) | [Code source](./X-Ibition-2025-Robodog/)
 
-Vérifiez les constantes dans `VortexMover_Silent.ino` (dimensions, pas par tour, etc.) pour les adapter à votre mécanique.
+**Détails complets** : Voir [PROJECTS.md](./PROJECTS.md)
 
 ---
 
-## 🚀 Installation et utilisation
+### 2. Forum 2028 Pick & Place 🏭🤖
+**Description** : Robot Pick & Place à 3 axes (X, Y, Z) avec contrôle G-code, interfaces Processing (dessin de trajectoires, joystick) et contrôle par gestes de la main (Python + MediaPipe).
 
-### 1. Firmware Arduino
+**Technologies** : Arduino (C++), Processing (Java), Python, MediaPipe, OpenCV, communication série
 
-1. Ouvrir `VortexMover_Silent/VortexMover_Silent.ino` dans l’IDE Arduino.
-2. Vérifier/adapter les broches et constantes (voir commentaires dans le code).
-3. Sélectionner la carte et le port, puis téléverser.
-4. Noter le **port série** (ex. `COM5` sous Windows, `/dev/ttyUSB0` sous Linux).
-
-### 2. Interfaces Processing
-
-- **Processing 2 (dessin de trajectoires)**  
-  - Ouvrir `Processing_2/Processing_2.pde`.  
-  - Dans le code, mettre à jour `portName` (ex. `"COM5"`).  
-  - Lancer le sketch. Dessiner en glissant la souris ; les coordonnées sont envoyées en G-code à l’Arduino.
-
-- **VotexMover_Processing (contrôle complet)**  
-  - Ouvrir `VotexMover_Processing/VotexMover_Processing.pde`.  
-  - Installer la librairie **ControlP5** (Sketch → Importer une bibliothèque → ControlP5).  
-  - Remplacer `"COM5"` par votre port série dans le code.  
-  - Lancer le sketch pour joystick, champs X/Y/Z, mode dessin, Pick/Place, etc.
-
-### 3. Contrôle par gestes (Python)
-
-1. Créer un environnement virtuel (recommandé) :
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate   # Windows
-   ```
-
-2. Installer les dépendances :
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Dans le script Python (`Python Forum 2028.txt`), modifier le port série si besoin :
-   ```python
-   ser = serial.Serial('COM5', 115200, timeout=1)  # Remplacez COM5 par votre port
-   ```
-
-4. Lancer le script (en le renommant en `.py` ou en appelant Python sur le fichier `.txt`) :
-   ```bash
-   python "Python Forum 2028.txt"
-   ```
-   Une fenêtre s’ouvre avec la webcam ; les gestes détectés envoient des commandes à l’Arduino.
+**Lien** : [Voir le projet](./Forum-2028-Pick-And-Place/README.md) | [Code source](./Forum-2028-Pick-And-Place/)
 
 ---
 
-## 📟 Commandes G-code (firmware Arduino)
+## 📋 Documentation détaillée
 
-| Commande | Description |
-|----------|-------------|
-| `G00 X.. Y.. Z..;` | Déplacement rapide (coordonnées en mm) |
-| `G01 X.. Y.. Z.. F..;` | Déplacement linéaire avec vitesse F (mm/s) |
-| `G04 P..;` | Pause (P en secondes) |
-| `G10;` | Retour à l’origine (X, Y, Z) |
-| `G11;` | Remise à zéro axe X |
-| `G12;` | Remise à zéro axe Y |
-| `G13;` | Remise à zéro axe Z |
-| `G90;` | Mode coordonnées absolues |
-| `G91;` | Mode coordonnées relatives |
-| `G92 X.. Y.. Z..;` | Mise à jour manuelle de la position stockée |
-| `G101;` | Activer l’aspiration (Pick) |
-| `G102;` | Désactiver l’aspiration (Place) |
-| `M18;` | Désactiver les moteurs |
-| `M19;` | Activer les moteurs |
-| `M100;` | Afficher l’aide |
-| `M114;` | Afficher les statistiques (position, vitesse, etc.) |
+Pour une description complète de chaque projet avec :
+- Description détaillée
+- Technologies utilisées
+- Contribution spécifique
+- Fichiers justificatifs
+- Résultats obtenus
 
-Chaque commande doit se terminer par `;`. L’Arduino renvoie `>` lorsqu’il est prêt pour la commande suivante.
+👉 Consultez [PROJECTS.md](./PROJECTS.md)
 
----
+## 🛠️ Installation et utilisation
 
-## ✋ Contrôle par gestes (Python)
+Chaque projet possède sa propre documentation dans son dossier. Consultez le README.md de chaque projet pour :
+- Les prérequis
+- L'installation
+- L'utilisation
+- La configuration
 
-Le script utilise **MediaPipe** pour détecter une main et reconnaître des gestes. Les gestes reconnus envoient les commandes suivantes (en mode relatif `G91`) :
+## 📊 Compétences démontrées
 
-| Geste | Action envoyée |
-|-------|----------------|
-| **Main ouverte** (5 doigts) | `G0 Z-20` (descendre Z) |
-| **Index seul** (Left) | `G0 Y-20` |
-| **Pouce + auriculaire** (Right) | `G0 Y20` |
-| **Peace** (index + majeur) | `G0 X20` |
-| **OK** (pouce + index en cercle) | `G0 X-20` |
-| **Poing fermé** (Closed) | `G10` (retour origine) |
-| **Autre geste** (FUCK) | `G0 Z20` (monter Z) |
+### Langages
+- Python (avancé)
+- C/C++ (Arduino)
+- Processing (Java)
 
-Ajustez les valeurs (ex. `20`) dans le script si vous voulez des pas plus grands ou plus petits.
+### Technologies
+- Robotique embarquée
+- Vision par ordinateur (OpenCV, MediaPipe)
+- Intelligence artificielle (YOLO, MediaPipe)
+- Interfaces graphiques (CustomTkinter, ControlP5)
+- Communication série
+- Interprétation G-code
 
----
+## 📧 Contact
 
-## 🔧 Dépannage
+- **GitHub** : [@Ayman-cell](https://github.com/Ayman-cell)
+- **Email** : [Votre email]
 
-- **Port série introuvable** : Vérifier le port dans le Gestionnaire de périphériques (Windows) ou `ls /dev/tty*` (Linux). Adapter `COMx` ou le chemin dans Arduino, Processing et Python.
-- **Aucune réponse de l’Arduino** : Vérifier que le débit est **115200** partout et qu’aucun autre logiciel n’utilise le port.
-- **Moteurs ne bougent pas** : Vérifier `M19` (moteurs activés), alimentation des pilotes et câblage des broches EN/DIR/STEP.
-- **Python : "No module named 'cv2'"** : Exécuter `pip install -r requirements.txt` dans le même environnement que le script.
+## 📄 Licence
+
+Les projets de ce dépôt sont destinés à des fins de démonstration et de portfolio.
 
 ---
 
-## 📄 Licence et crédits
-
-Projet **Forum 2028** — Robot Pick & Place, contrôle 3 axes (G-code, Processing, contrôle par gestes).  
-Vous pouvez adapter le code à votre matériel (broches, dimensions, gestes).
-
----
-
-**Dépôt GitHub** : [Ayman-cell/robotics](https://github.com/Ayman-cell/robotics)
+*Dernière mise à jour : Février 2025*

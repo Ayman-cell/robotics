@@ -1,18 +1,34 @@
+# Arduino / build
+*.elf
+*.hex
+*.map
+.build/
+*.o
+*.d
+*.ino.eep
+*.ino.with_bootloader.bin
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
 venv/
 .venv/
 env/
-*.egg-info/
-.eggs/
+ENV/
 
 # IDE
 .idea/
 .vscode/
+*.code-workspace
 *.swp
 *.swo
 *~
@@ -20,13 +36,15 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Arduino / Processing (fichiers temporaires ou build)
-*.ino.eep
-*.ino.elf
-*.ino.hex
-*.ino.with_bootloader.bin
-build/
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
 
 # Logs
 *.log
+
+# Temporary files
+*.tmp
+*.bak
