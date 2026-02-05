@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.eggs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arduino / Processing (fichiers temporaires ou build)
+*.ino.eep
+*.ino.elf
+*.ino.hex
+*.ino.with_bootloader.bin
+build/
+
+# Logs
+*.log
